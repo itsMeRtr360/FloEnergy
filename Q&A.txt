@@ -1,0 +1,20 @@
+Q1. What is the rationale for the technologies you have decided to use?
+
+I used .NET 8 / C# console app since NEM12 parsing and SQL generation is a batch, I/O-bound task with no UI requirement, so a lightweight console app should be sufficient.
+NEM12 files can contain years a large amount of interval data, Streaming readings one at a time via yield return means the parser never has to hold the whole file (or even a whole day's readings) in memory, and it composes naturally with await foreach in the writer.
+xUnit - standard, low-ceremony test framework for .NET; [Fact] + Assert is enough for the parsing logic here without needing a heavier BDD-style framework.
+
+Q2: What I'd do differently with more time
+
+I would not generate an insertion script, rather I would write straight into the db table using parameters or sql bulk copy.
+Resilient error handling per-record instead of fail-fast per-file — right now a single malformed 300 record throws and aborts the whole file. With more time I'd add a mode to skip/log bad records and continue, with a summary report, since real-world meter files often have partial corruption.
+DI + IHostBuilder so the parser/writer are testable/swappable behind interfaces (e.g., IMeterReadingWriter) and configuration (batch size, output target) comes from appsettings.json/env vars rather than constructor defaults.
+
+Q3. What is the rationale for the design choices that you have made?
+Separation of concerns by namespace — Models, Parsing, Output are cleanly split so the parser knows nothing about SQL and the writer knows nothing about NEM12 record formats. That makes each piece independently testable and lets you swap the writer (e.g., to a DB writer) without touching the parser.
+
+Streaming pipeline (IAsyncEnumerable end-to-end) wires parser.ParseAsync() directly into writer.WriteAsync(readings, ...). This is a producer/consumer pipeline: the parser yields readings as it reads lines, the writer batches and flushes them, and neither side buffers more than one batch at a time. This scales to large files without a redesign.
+
+Fail-fast validation in the parser — the parser throws InvalidDataException on missing/malformed fields rather than silently producing wrong readings. For billing-relevant energy data, silently-wrong output is worse than a loud failure — correctness was prioritized over resilience here.
+
+CancellationTokenSource wired to Console.CancelKeyPress a console tool processing a potentially huge file should be interruptible cleanly (Ctrl+C) rather than requiring a hard kill, and the same token flows through both parsing and writing.
