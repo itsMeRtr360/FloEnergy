@@ -6,7 +6,7 @@ namespace FloEnergyMeterReadings.Output
 {
     public class SqlInsertWriter
     {
-        private const string TABLE_NAME = "MeterReadings";
+        private const string TABLE_NAME = "meter_readings";
         private const string TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
         private readonly int _batchSize;
@@ -21,6 +21,7 @@ namespace FloEnergyMeterReadings.Output
 
             _batchSize = batchSize;
             _outputFilePath = outputFilePath;
+
         }
 
         public async Task<long> WriteAsync(IAsyncEnumerable<MeterReading> readings,CancellationToken cancellationToken = default)
@@ -65,7 +66,7 @@ namespace FloEnergyMeterReadings.Output
             TextWriter output, List<MeterReading> batch, CancellationToken cancellationToken)
         {
             var sb = new StringBuilder(batch.Count * 64);
-            sb.Append("INSERT INTO ").Append(TABLE_NAME).Append(" (nmi, \"timestamp\", consumption) VALUES\n");
+            sb.Append("INSERT INTO \"").Append(TABLE_NAME).Append("\" (\"nmi\", \"timestamp\", \"consumption\") VALUES\n");
 
             for (var i = 0; i < batch.Count; i++)
             {
@@ -87,7 +88,7 @@ namespace FloEnergyMeterReadings.Output
             await output.WriteAsync(sb, cancellationToken).ConfigureAwait(false);
         }
 
-        private static string EscapeSqlLiteral(string value) => value.Replace("'", "''");
+        private static string EscapeSqlLiteral(string? value) => value?.Replace("'", "''") ?? string.Empty;
 
     }
 }
