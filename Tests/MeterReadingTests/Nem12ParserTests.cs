@@ -105,5 +105,28 @@ namespace MeterReadingTests
 
 
         }
+
+
+        [Fact]
+        public async Task ParseAsync_300RecordWithout200()
+        {
+            try
+            {
+                var parser = new Nem12Parser(@"../../../SampleTestInputs/sampleData300Without200.txt");
+                var results = new List<MeterReading>();
+
+                // Act
+                await foreach (var reading in parser.ParseAsync())
+                {
+                    results.Add(reading);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Assert
+                Assert.IsType<InvalidDataException>(ex);
+                Assert.Equal("300 record encountered before any 200 record.", ex.Message);
+            }
+        }
     }
 }
