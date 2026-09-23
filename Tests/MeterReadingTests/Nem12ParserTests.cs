@@ -70,7 +70,6 @@ namespace MeterReadingTests
                     results.Add(reading);
                 }
 
-               
             }
             catch (Exception ex)
             {
@@ -82,6 +81,29 @@ namespace MeterReadingTests
             {
                 if (File.Exists(tempFilePath)) File.Delete(tempFilePath);
             }
+        }
+
+
+        [Fact]
+        public async Task ParseAsync_Muliple200Records()
+        {
+            var parser = new Nem12Parser(@"../../../SampleTestInputs/sampleData1.txt");
+            var results = new List<MeterReading>();
+
+            // Act
+            await foreach (var reading in parser.ParseAsync())
+            {
+                results.Add(reading);
+            }
+            Assert.Equal(192, results.Count);
+            Assert.Equal("NEM1201009", results[0].Nmi);
+            Assert.Equal("NEM1201010", results[97].Nmi);
+            Assert.Equal(96, results.Where(r => r.Nmi == "NEM1201009").Count());
+            Assert.Equal(96, results.Where(r => r.Nmi == "NEM1201010").Count());
+            Assert.Equal(47, results.Where(r => r.Nmi == "NEM1201009" && r.IntervalTimeStamp.Date == new DateTime(2026, 9, 21)).Count());
+            Assert.Equal(48, results.Where(r => r.Nmi == "NEM1201009" && r.IntervalTimeStamp.Date == new DateTime(2026, 9, 22)).Count());
+
+
         }
     }
 }
