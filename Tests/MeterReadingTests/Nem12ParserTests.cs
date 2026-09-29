@@ -6,10 +6,11 @@ namespace MeterReadingTests
 {
     public class Nem12ParserTests
     {
+        private readonly string _inputFolder = @"../../../SampleTestInputs/";
         [Fact]
         public async Task ParseAsync_Standard30MinFile_Parses48RecordsCorrectly()
         {
-                var parser = new Nem12Parser(@"../../../SampleTestInputs/sampleDataSimple200Record.txt");
+                var parser = new Nem12Parser(@$"{_inputFolder}/sampleDataSimple200Record.txt");
                 var results = new List<MeterReading>();
 
                 // Act
@@ -38,7 +39,7 @@ namespace MeterReadingTests
         {
             try
             {
-                var parser = new Nem12Parser(@"../../../SampleTestInputs/sampleDataMissingConsumption.txt");
+                var parser = new Nem12Parser(@$"{_inputFolder}/sampleDataMissingConsumption.txt");
                 var results = new List<MeterReading>();
 
                 // Act
@@ -60,7 +61,7 @@ namespace MeterReadingTests
         [Fact]
         public async Task ParseAsync_Muliple200Records()
         {
-            var parser = new Nem12Parser(@"../../../SampleTestInputs/sampleDataMultiple200.txt");
+            var parser = new Nem12Parser(@$"{_inputFolder}/sampleDataMultiple200.txt");
             var results = new List<MeterReading>();
 
             // Act
@@ -85,7 +86,7 @@ namespace MeterReadingTests
         {
             try
             {
-                var parser = new Nem12Parser(@"../../../SampleTestInputs/sampleData300Without200.txt");
+                var parser = new Nem12Parser(@$"{_inputFolder}/sampleData300Without200.txt");
                 var results = new List<MeterReading>();
 
                 // Act
